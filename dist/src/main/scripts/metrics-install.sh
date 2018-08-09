@@ -1,5 +1,5 @@
 #!/bin/sh
-./set-elk-ver.sh
+set-elk-ver.sh
 
 wget https://artifacts.elastic.co/downloads/beats/packetbeat/packetbeat-${elk_ver}-linux-x86_64.tar.gz
 echo Unpacking PacketBeat...

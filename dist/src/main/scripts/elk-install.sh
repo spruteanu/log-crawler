@@ -1,5 +1,5 @@
 #!/bin/sh
-./set-elk-ver.sh
+set-elk-ver.sh
 
 wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-${elk_ver}.tar.gz
 echo Unpacking Elastic Search...
