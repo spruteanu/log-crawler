@@ -57,6 +57,11 @@ class LogEntry extends Expando implements Cloneable {
         this.row = row
     }
 
+    @Override
+    String toString() {
+        return line ? line : (source ? source : logValueMap)
+    }
+
     LogEntry put(String entryKey, Object value) {
         logValueMap.put(entryKey, value)
         return this

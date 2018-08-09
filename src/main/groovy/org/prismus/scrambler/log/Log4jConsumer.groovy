@@ -376,6 +376,11 @@ class Log4jConsumer extends RegexConsumer {
             return message(builder)
         }
 
+        Builder configuration(String configPath) {
+            pattern(configPath)
+            return this
+        }
+
         RegexConsumer match(Pattern pattern, @DelegatesTo(RegexConsumer.Builder) Closure closure = null) {
             final builder = new RegexConsumer.Builder(contextBuilder, of(pattern))
             LogCrawler.checkDelegateClosure(closure, builder)

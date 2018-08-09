@@ -162,6 +162,9 @@ class LogCrawlerTest extends Specification {
                 '-log4j', '%-4r [%t] %-5p %c %x - %m%n', new File(folder, 'sample-2.log').path,
         ).build().iterator().toList().size()
 
+        and: 'create an instance by specifying a script file'
+        LogCrawler.builder('/sample-define-consumers-log.groovy').build()
+
         when: 'illegal log4j config provided for a file when conversion pattern is required'
         LogCrawler.builder(
                 '-log4j', new File(folder, 'log4j.properties').path, new File(folder, 'sample-1.log').path,

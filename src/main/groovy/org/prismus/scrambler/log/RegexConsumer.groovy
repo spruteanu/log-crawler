@@ -24,6 +24,7 @@ import groovy.util.logging.Log
 
 import java.nio.file.Path
 import java.text.SimpleDateFormat
+import java.util.logging.Level
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
@@ -160,8 +161,10 @@ class RegexConsumer implements LogConsumer {
                 }
             }
         }
-        if (!resultMap) {
-            log.warning("No match for pattern: '${pattern.pattern()}'; line: '$line'")
+        if (!resultMap) { // todo: report in trace mode the warning, count all not marched and report the count as summary with a note that in trace you can get detailed line and pattern
+            if (log.isLoggable(Level.FINEST)) {
+                log.finest("No match for pattern: '${pattern.pattern()}'; line: '$line'")
+            }
         }
         return resultMap
     }

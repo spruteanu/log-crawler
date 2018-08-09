@@ -11,16 +11,43 @@
     <fileSets>
 
         <fileSet>
-            <directory></directory>
+            <directory>src/main/scripts</directory>
             <includes>
-                <include>readme.md</include>
+                <include>*.bat</include>
             </includes>
+            <excludes>
+                <exclude>*-install.bat</exclude>
+            </excludes>
             <outputDirectory>/</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/scripts</directory>
+            <includes>
+                <include>*-install.bat</include>
+            </includes>
+            <outputDirectory>/install</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>src/main/scripts</directory>
             <includes>
-                <include>*.bat</include>
+                <include>*.exe</include>
+            </includes>
+            <outputDirectory>/install</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/scripts/templates</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>/templates</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory></directory>
+            <includes>
+                <include>readme.md</include>
             </includes>
             <outputDirectory>/</outputDirectory>
         </fileSet>

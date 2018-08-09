@@ -350,15 +350,28 @@ class LogCrawler implements Iterable<LogEntry> {
             for (Map.Entry<LogEntry, Object> entry : sourceMap.entrySet()) {
                 final value = entry.value
                 LogConsumer source = null
-                if (value instanceof LogConsumer) {
-                    source = value as LogConsumer
-                } else if (value instanceof ConsumerBuilder) {
+                if (value instanceof ConsumerBuilder) {
                     if (consumers.containsKey(value)) {
                         source = consumers.get(value)
                     } else {
                         source = value.build()
                         consumers.put(value, source)
                     }
+                }
+                if (source) {
+                    final logEntry = entry.key
+                    logCrawler.source(logEntry, new LineReaderConsumer(logCrawler, source))
+                    final sourceName = LineReader.getSourceName(logEntry)
+                    if (sourceName) {
+                        sourceNames.add(sourceName)
+                    }
+                }
+            }
+            for (Map.Entry<LogEntry, Object> entry : sourceMap.entrySet()) {
+                final value = entry.value
+                LogConsumer source = null
+                if (value instanceof LogConsumer) {
+                    source = value as LogConsumer
                 }
                 if (source) {
                     final logEntry = entry.key
@@ -612,7 +625,7 @@ class LogCrawler implements Iterable<LogEntry> {
         Log4jConsumer.Builder log4j(File folder, String conversionPattern,
                                     String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
                                     @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
-            final builder = log4j(conversionPattern)
+            final builder = log4j(conversionPattern, closure)
             source(builder, conversionPattern, folder, fileFilter, fileSorter)
             return builder
         }

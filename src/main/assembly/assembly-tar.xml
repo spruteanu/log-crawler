@@ -11,20 +11,42 @@
     <fileSets>
 
         <fileSet>
-            <directory></directory>
-            <includes>
-                <include>readme.md</include>
-            </includes>
-            <outputDirectory>/</outputDirectory>
-            <lineEnding>unix</lineEnding>
-        </fileSet>
-        <fileSet>
             <directory>src/main/scripts</directory>
             <includes>
                 <include>*.sh</include>
             </includes>
+            <excludes>
+                <exclude>*-install.sh</exclude>
+            </excludes>
             <outputDirectory>/</outputDirectory>
             <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/scripts</directory>
+            <includes>
+                <include>*-install.sh</include>
+            </includes>
+            <outputDirectory>/install</outputDirectory>
+            <lineEnding>unix</lineEnding>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>src/main/scripts/templates</directory>
+            <includes>
+                <include>**/*.*</include>
+            </includes>
+            <outputDirectory>/templates</outputDirectory>
+        </fileSet>
+
+        <fileSet>
+            <directory>/</directory>
+            <includes>
+                <include>readme.md</include>
+            </includes>
+            <outputDirectory>/</outputDirectory>
         </fileSet>
 
     </fileSets>
