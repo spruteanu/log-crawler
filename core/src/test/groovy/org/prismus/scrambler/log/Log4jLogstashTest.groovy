@@ -77,7 +77,7 @@ output {
         logstash.toLogstashConfig(new File(folder, 'log4j.properties').path)
 
         expect:
-        3 == LogCrawler.listFiles(folder, 'sample*.rb').size()
+        3 == LogCrawlerBuilder.listFiles(folder, 'sample*.rb').size()
     }
 
     void 'verify log4j appenders to one logstash config'() {
@@ -87,7 +87,7 @@ output {
         logstash.toLogstashConfig(new File(folder, 'log4j.properties').path)
 
         expect:
-        1 == LogCrawler.listFiles(folder, 'log4j.properties.rb').size()
+        1 == LogCrawlerBuilder.listFiles(folder, 'log4j.properties.rb').size()
     }
 
 }

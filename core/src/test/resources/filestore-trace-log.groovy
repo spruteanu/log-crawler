@@ -24,7 +24,7 @@ log4j {
     }
 }
 
-output 'c:/work/temp/Case122498_BCBSNC/traces.csv', {
+toCsv 'c:/work/temp/Case122498_BCBSNC/traces.csv', {
     columns 'Date', 'FileID', 'ExecutionTime', 'Action', 'Thread', 'Source', 'Message'
     fieldSeparator '"'
 }

@@ -390,7 +390,7 @@ class TableBatchConsumer implements LogConsumer, Closeable {
         Builder() {
         }
 
-        Builder(LogCrawler.Builder contextBuilder, def consumer, Object... args) {
+        Builder(LogCrawlerBuilder contextBuilder, def consumer, Object... args) {
             super(contextBuilder, consumer, args)
         }
 

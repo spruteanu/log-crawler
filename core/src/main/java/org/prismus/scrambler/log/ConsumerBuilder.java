@@ -24,8 +24,8 @@ import java.util.Map;
 /**
  * @author Serge Pruteanu
  */
-public class ConsumerBuilder<T extends LogConsumer> {
-    protected LogCrawler.Builder contextBuilder;
+public class ConsumerBuilder<T extends LogConsumer> implements Cloneable {
+    protected LogCrawlerBuilder contextBuilder;
     private T consumer;
     private Object consumerObj;
     private Object[] args;
@@ -35,7 +35,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
     ConsumerBuilder() {
     }
 
-    ConsumerBuilder(LogCrawler.Builder contextBuilder, Object consumer, Object... args) {
+    ConsumerBuilder(LogCrawlerBuilder contextBuilder, Object consumer, Object... args) {
         this.contextBuilder = contextBuilder;
         this.consumerObj = consumer;
         this.args = args;
@@ -51,7 +51,7 @@ public class ConsumerBuilder<T extends LogConsumer> {
         return this;
     }
 
-    LogCrawler.Builder crawler() {
+    LogCrawlerBuilder crawler() {
         return contextBuilder;
     }
 

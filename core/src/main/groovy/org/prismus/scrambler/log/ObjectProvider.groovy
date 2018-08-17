@@ -22,6 +22,11 @@ package org.prismus.scrambler.log
 /**
  * @author Serge Pruteanu
  */
-interface ObjectProvider {
-    Object get(Object objectId, Object... args)
+abstract class ObjectProvider {
+    abstract Object get(Object objectId, Object... args)
+
+    List<ConsumerBuilder> getRegisteredBuilders() {
+        return ServiceLoader.load(ConsumerBuilder).iterator().toList()
+    }
+
 }

@@ -50,5 +50,5 @@ log4j {
 
 //parallel()
 
-output "elt-log-${new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date())}.csv",
+toCsv "elt-log-${new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date())}.csv",
         Log4jConsumer.DATE, 'Action', 'TransmissionSID', 'PackageID', 'FileID', 'ExecutionTime', Log4jConsumer.THREAD_NAME, LogEntry.SOURCE_INFO, Log4jConsumer.MESSAGE

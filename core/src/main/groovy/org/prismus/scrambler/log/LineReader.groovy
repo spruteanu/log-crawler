@@ -39,6 +39,35 @@ abstract class LineReader implements Closeable {
     }
 
     @CompileStatic
+    static List<RandomAccessFileLineReader> partitionReaders(String filePath) {
+        return partitionReaders(filePath, 1)
+    }
+
+    @CompileStatic
+    private static RandomAccessFile createRaf(String filePath) {
+        return new RandomAccessFile(filePath, 'r')
+    }
+
+    @CompileStatic
+    static List<RandomAccessFileLineReader> partitionReaders(String filePath, long nParts) {
+        final List<RandomAccessFileLineReader> results = new ArrayList<>()
+        RandomAccessFile raf = createRaf(filePath)
+        long endPos = raf.length()
+        long step = endPos / nParts as long
+        while (nParts--) {
+            raf = createRaf(filePath)
+            results.add(new RandomAccessFileLineReader(raf, endPos))
+            long startPos = endPos - step
+            if (startPos) {
+                raf.seek(startPos)
+                raf.readLine()
+                endPos = raf.filePointer
+            }
+        }
+        return results
+    }
+
+    @CompileStatic
     static LineReader toLineReader(InputStream inputStream) {
         return new IoLineReader(new BufferedReader(new InputStreamReader(inputStream)))
     }
@@ -96,14 +125,21 @@ abstract class LineReader implements Closeable {
     @CompileStatic
     private static class RandomAccessFileLineReader extends LineReader {
         final RandomAccessFile raf
+        final long endPosition
 
         RandomAccessFileLineReader(RandomAccessFile raf) {
+            this(raf, raf.length())
+        }
+
+        RandomAccessFileLineReader(RandomAccessFile raf, long endPosition) {
             this.raf = raf
+            this.endPosition = endPosition
         }
 
         @Override
         String readLine() {
-            return raf.readLine()
+            final filePointer = raf.getFilePointer()
+            return filePointer < endPosition ? raf.readLine() : null
         }
 
         @Override

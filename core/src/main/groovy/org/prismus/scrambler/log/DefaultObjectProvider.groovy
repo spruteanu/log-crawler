@@ -31,7 +31,7 @@ import java.util.regex.Pattern
  * @author Serge Pruteanu
  */
 @CompileStatic
-class DefaultObjectProvider implements ObjectProvider {
+class DefaultObjectProvider extends ObjectProvider {
     private static final Pattern CLASS_PATTERN = ~/([a-zA-Z_$][a-zA-Z\d_$]*\.)*[a-zA-Z_$][a-zA-Z\d_$]*/
 
     Map<String, Object> objectIdClassMap = [:]

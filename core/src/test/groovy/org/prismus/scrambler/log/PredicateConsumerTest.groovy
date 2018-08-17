@@ -33,7 +33,7 @@ class PredicateConsumerTest extends Specification {
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
         def exceptionCollector = new ArrayListCollector()
         def npeCollector = new ArrayListCollector()
-        def logCrawler = new LogCrawler.Builder()
+        def logCrawler = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).exception().crawler()
                 .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).exception().crawler()
                 .filter({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) }, exceptionCollector)
@@ -48,7 +48,7 @@ class PredicateConsumerTest extends Specification {
         and: 'another example of predicate using a container of consumers'
         null != (exceptionCollector = new ArrayListCollector())
         null != (npeCollector = new ArrayListCollector())
-        null != (logCrawler = new LogCrawler.Builder()
+        null != (logCrawler = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).exception().crawler()
                 .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).exception().crawler()
                 .filter({ LogEntry entry -> null != entry.get(ExceptionConsumer.EXCEPTION) },

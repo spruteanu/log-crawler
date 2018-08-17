@@ -98,7 +98,7 @@ class RegexConsumer implements LogConsumer {
     }
 
     private List<LogConsumer> get(String key) {
-        return consumerMap.containsKey(key) ? consumerMap.get(key) : Collections.<LogConsumer>emptyList()
+        return consumerMap.containsKey(key) ? consumerMap.get(key) : Collections.<LogConsumer>emptyList() as List<LogConsumer>
     }
 
     @Override
@@ -206,7 +206,7 @@ class RegexConsumer implements LogConsumer {
         String path
         private String fileFilter
 
-        Comparator<Path> fileSorter = LogCrawler.CREATED_DT_COMPARATOR
+        Comparator<Path> fileSorter = LogCrawlerBuilder.CREATED_DT_COMPARATOR
 
         Builder() {
         }
@@ -242,7 +242,7 @@ class RegexConsumer implements LogConsumer {
             this.fileSorter = fileSorter
         }
 
-        Builder(LogCrawler.Builder contextBuilder, def consumer) {
+        Builder(LogCrawlerBuilder contextBuilder, def consumer) {
             super(contextBuilder, consumer)
         }
 

@@ -31,9 +31,9 @@ class LogCrawlerTest extends Specification {
     void 'verify list files'() {
         final folder = new File(LogCrawlerTest.protectionDomain.codeSource.location.path)
         expect:
-        0 < LogCrawler.listFiles(folder).size()
-        2 == LogCrawler.listFiles(folder, '*.log').size()
-        1 == LogCrawler.listFiles(folder, '*sample-1.log').size()
+        0 < LogCrawlerBuilder.listFiles(folder).size()
+        2 == LogCrawlerBuilder.listFiles(folder, '*.log').size()
+        1 == LogCrawlerBuilder.listFiles(folder, '*sample-1.log').size()
     }
 
     void 'verify builders'() {
@@ -42,10 +42,10 @@ class LogCrawlerTest extends Specification {
         final listCollector = new ArrayList<LogEntry>()
 
         given:
-        def logContext = new LogCrawler.Builder()
+        def logContext = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .date().exception().crawler()
-                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .using({ listCollector.add(it) })
                 .build()
         logContext.consume()
@@ -57,9 +57,9 @@ class LogCrawlerTest extends Specification {
         null != listCollector[20].get(ExceptionConsumer.EXCEPTION)
 
         and: 'verify csv collector columns are populated with groups defined in source consumer'
-        null != (logContext = new LogCrawler.Builder()
+        null != (logContext = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
-                .output(stringWriter)
+                .toCsv(stringWriter)
                 .build())
         [Log4jConsumer.PRIORITY, Log4jConsumer.DATE,
          Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE,
@@ -71,10 +71,10 @@ class LogCrawlerTest extends Specification {
         final stringWriter = new StringWriter()
 
         given:
-        def logContext = new LogCrawler.Builder()
+        def logContext = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',)
                 .date().exception().crawler()
-                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build()
         def iterator = logContext.iterator()
         List result = iterator.toList()
@@ -86,11 +86,11 @@ class LogCrawlerTest extends Specification {
         null != result[20].get(ExceptionConsumer.EXCEPTION)
 
         and: 'verify multiple sources iterator'
-        null != (logContext = new LogCrawler.Builder()
+        null != (logContext = new LogCrawlerBuilder()
                 .log4j(folder, '%5p | %d | %F | %L | %m%n', '*sample-1.log',).crawler()
-                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .log4j(folder, '%-4r [%t] %-5p %c %x - %m%n', '*sample-2.log',).crawler()
-                .output(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
+                .toCsv(stringWriter, Log4jConsumer.PRIORITY, Log4jConsumer.DATE, Log4jConsumer.CALLER_FILE_NAME, Log4jConsumer.CALLER_LINE, Log4jConsumer.MESSAGE)
                 .build())
         ['sample-1.log', 'sample-2.log'] == logContext.sourceConsumerMap.keySet().collect { LineReader.getSourceName(it)}.sort()
         null != (iterator = logContext.iterator())

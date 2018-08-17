@@ -330,7 +330,7 @@ class Log4jConsumer extends RegexConsumer {
         Builder() {
         }
 
-        Builder(LogCrawler.Builder contextBuilder, def consumer) {
+        Builder(LogCrawlerBuilder contextBuilder, def consumer) {
             super(contextBuilder, consumer)
         }
 

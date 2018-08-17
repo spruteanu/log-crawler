@@ -126,7 +126,7 @@ class CsvWriterConsumer implements LogConsumer, Closeable {
         Builder() {
         }
 
-        Builder(LogCrawler.Builder contextBuilder, Object consumer, Object... args) {
+        Builder(LogCrawlerBuilder contextBuilder, Object consumer, Object... args) {
             super(contextBuilder, consumer, args)
         }
 

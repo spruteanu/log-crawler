@@ -28,7 +28,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext
  * @author Serge Pruteanu
  */
 @CompileStatic
-class SpringObjectProvider implements ObjectProvider {
+class SpringObjectProvider extends ObjectProvider {
     ApplicationContext context
 
     SpringObjectProvider() {

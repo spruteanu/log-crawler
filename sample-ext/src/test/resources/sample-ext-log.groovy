@@ -1,2 +1,2 @@
-regex ".*test"
+regex '\\w+'
 empty 'test'
