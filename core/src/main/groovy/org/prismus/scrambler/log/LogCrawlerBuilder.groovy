@@ -6,7 +6,6 @@ import groovy.util.logging.Log
 import org.apache.commons.lang3.StringUtils
 import org.codehaus.groovy.control.CompilerConfiguration
 import org.codehaus.groovy.control.customizers.ImportCustomizer
-import org.codehaus.groovy.runtime.InvokerHelper
 import org.springframework.context.ApplicationContext
 
 import javax.sql.DataSource
@@ -264,7 +263,7 @@ class LogCrawlerBuilder {
         if (builder.path) {
             source(builder, pattern.pattern(), new File(builder.path), builder.fileFilter, builder.fileSorter)
         } else {
-            sourceConsumer(builder, pattern.pattern())
+            builders.add(builder)
         }
         return builder
     }
@@ -276,7 +275,7 @@ class LogCrawlerBuilder {
         if (builder.path) {
             source(builder, regEx, new File(builder.path), builder.fileFilter, builder.fileSorter)
         } else {
-            sourceConsumer(builder, regEx)
+            builders.add(builder)
         }
         return builder
     }
@@ -290,7 +289,7 @@ class LogCrawlerBuilder {
         if (builder.path) {
             source(builder, builder.pattern, new File(builder.path), builder.fileFilter, builder.fileSorter)
         } else {
-            sourceConsumer(builder, builder.pattern)
+            builders.add(builder)
         }
         return builder
     }
@@ -330,7 +329,7 @@ class LogCrawlerBuilder {
 
     RegexConsumer.Builder regex(File folder, Pattern pattern,
                                 String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR) {
-        final builder = regex(pattern)
+        final builder = new RegexConsumer.Builder(this, RegexConsumer.of(pattern))
         source(builder, pattern.pattern(), folder, fileFilter, fileSorter)
         return builder
     }
@@ -338,7 +337,9 @@ class LogCrawlerBuilder {
     Log4jConsumer.Builder log4j(File folder, String conversionPattern,
                                 String fileFilter = '*', Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
                                 @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
-        final builder = log4j(conversionPattern, closure)
+        final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
+        LogCrawler.checkDelegateClosure(closure, builder)
+        builder.file = fileFilter
         source(builder, conversionPattern, folder, fileFilter, fileSorter)
         return builder
     }
@@ -346,7 +347,8 @@ class LogCrawlerBuilder {
     Log4jConsumer.Builder log4j(String folder, String conversionPattern,
                                 Comparator<Path> fileSorter = CREATED_DT_COMPARATOR,
                                 @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
-        final builder = log4j(conversionPattern, closure).path(folder) as Log4jConsumer.Builder
+        final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
+        LogCrawler.checkDelegateClosure(closure, builder)
         source(builder, conversionPattern, new File(folder), builder.fileFilter, fileSorter)
         return builder
     }
@@ -366,9 +368,30 @@ class LogCrawlerBuilder {
             final loggerProperties = entry.value
             final builder = log4jBuilder(loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY))
             if (builder) {
+                builder.name = loggerName
+                builder.file = loggerProperties.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
                 LogCrawler.checkDelegateClosure(closure, builder)
                 sourceNameConsumerMap.put(loggerName, builder)
             }
+        }
+        return this
+    }
+
+    LogCrawlerBuilder log4jConfig(String log4jConfig, @DelegatesTo(Log4jConsumer.Builder) Closure closure = null) {
+        final log4jConsumerProperties = Log4jConsumer.extractLog4jConsumerProperties(Utils.readResourceText(log4jConfig).readLines())
+        if (log4jConsumerProperties.isEmpty()) {
+            throw new IllegalArgumentException("Either empty or there are no file loggers defined in '$log4jConfig'")
+        }
+        for (Map.Entry<String, Map<String, String>> entry : log4jConsumerProperties.entrySet()) {
+            final loggerName = entry.key
+            final loggerProperties = entry.value
+            final conversionPattern = loggerProperties.get(Log4jConsumer.APPENDER_CONVERSION_PATTERN_PROPERTY)
+            final builder = new Log4jConsumer.Builder(this, Log4jConsumer.of(conversionPattern))
+            builder.name = loggerName
+            builder.file = loggerProperties.get(Log4jConsumer.APPENDER_FILE_PROPERTY)
+            LogCrawler.checkDelegateClosure(closure, builder)
+            sourceNameConsumerMap.put(loggerName, builder)
+            sourceNameConsumerMap.put(conversionPattern, builder)
         }
         return this
     }
@@ -387,7 +410,11 @@ class LogCrawlerBuilder {
         if (builder.path && new File(builder.pattern).exists()) {
             log4jConfig(builder.path, builder.pattern, builder.fileSorter, closure)
         } else {
-            log4j(builder.pattern, closure)
+            if (builder.path) {
+                source(builder, builder.pattern, new File(builder.path), builder.fileFilter, builder.fileSorter)
+            } else {
+                sourceConsumer(builder, builder.pattern)
+            }
         }
         return this
     }
@@ -447,29 +474,25 @@ class LogCrawlerBuilder {
         return logCrawler
     }
 
-    private List toMethodTuple(String[] args, List<List> configTuple, int currentIdx, File file) {
-        if (configTuple.isEmpty()) {
-            throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
+    private int handleOptionArguments(String[] args, int i, List<String> unknownArgs) {
+        final String configType = args[i]
+        final String configValue = args[i + 1]
+        final file = new File(args[i + 2])
+        if (!file.exists()) {
+            unknownArgs.add('File: ' + args[i + 2] + ' doesn\'t exists or wrong file argument provided')
         }
-        int i = configTuple.size() - 1
-        for (; i > 0 && (configTuple.get(i)[1] as int) > currentIdx; i--) { ; }
-        final String configType = configTuple.get(i)[0] as String
-        final int configIdx = configTuple.get(i)[1] as int
-        final configValue = args[configIdx]
         final boolean configFile = new File(configValue).exists()
-
-        List result = null
         if (file.isDirectory()) {
             switch (configType) {
                 case LOG4J_ARG:
                     if (configFile) {
-                        result = ['log4jConfig', [file, configValue] as Object[]]
+                        log4jConfig(file, configValue)
                     } else {
-                        result = ['log4j', [file, configValue] as Object[]]
+                        log4j(file, configValue)
                     }
                     break
                 case REGEX_ARG:
-                    result = ['regexSourceFolder', [file, configValue] as Object[]]
+                    regex(file, Pattern.compile(configValue))
                     break
             }
         } else {
@@ -480,58 +503,41 @@ class LogCrawlerBuilder {
                         throw new UnsupportedOperationException("Unsupported log4j config file option: '$configValue' for a single file: '$file.path'. Only conversion pattern is supported here")
                     }
                     final builder = log4j(configValue)
-                    result = ['register', [sourceEntry, builder, configValue] as Object[]]
+                    register(sourceEntry, builder, configValue)
                     break
                 case REGEX_ARG:
-                    result = ['register', [sourceEntry, regex(configValue), configValue] as Object[]]
+                    register(sourceEntry, regex(configValue), configValue)
                     break
             }
         }
-        if (!result) {
-            throw new IllegalArgumentException("Illegal arguments provided: '${args.join(', ')}'; source type is unknown")
-        }
-        return result
+        return i + 2
     }
 
     protected LogCrawlerBuilder init(String... args) {
         if (!args) {
             return this
         }
-        final List<List> sourceMethodTuple = []
         final configTypes = [LOG4J_ARG, REGEX_ARG] as Set
-        final List<List> configTuple = []
         final Collection<String> scripts = []
         final unknownArgs = []
         for (int i = 0; i < args.length; i++) {
-            String arg = args[i];
+            final arg = args[i]
             if (arg.endsWith('groovy')) {
                 scripts.add(arg)
             } else {
                 if (configTypes.contains(arg.toLowerCase())) {
-                    if (args.length > i + 1) {
-                        configTuple.add([arg, ++i])
+                    if (args.length >= i + 2) {
+                        i = handleOptionArguments(args, i, unknownArgs)
                     } else {
                         unknownArgs.add("$arg argument must be followed by option and files to be applied")
                     }
-                    continue
-                }
-                final file = new File(arg)
-                if (file.exists()) {
-                    sourceMethodTuple.add(toMethodTuple(args, configTuple, i, file))
                 } else {
                     unknownArgs.add(arg)
                 }
             }
         }
-        if (sourceMethodTuple.isEmpty() && configTuple.size() > 0) {
-            unknownArgs.add('No source configuration options provided')
-        }
         if (unknownArgs) {
             throw new IllegalArgumentException("Unsupported/unknown arguments: '${unknownArgs.join(', ')}'; arguments: '${args.join(', ')}'")
-        }
-        for (final i = 0; i < sourceMethodTuple.size(); i++) {
-            final tuple = sourceMethodTuple.get(i)
-            InvokerHelper.invokeMethod(this, tuple[0].toString(), tuple[1])
         }
         for (final script : scripts) {
             initGroovyScriptBuilder(this, Utils.readGroovyResourceText(script))

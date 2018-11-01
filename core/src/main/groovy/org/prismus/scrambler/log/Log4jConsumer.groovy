@@ -326,6 +326,8 @@ class Log4jConsumer extends RegexConsumer {
      */
     @CompileStatic
     static class Builder extends RegexConsumer.Builder {
+        String name
+        String file
 
         Builder() {
         }

@@ -7,11 +7,11 @@ class DummyConsumerTest extends Specification {
     void 'verify registered log extended consumer builders'() {
         final crawlerBuilder = LogCrawler.builder('/sample-ext-log.groovy')
         final registeredBuilders = crawlerBuilder.provider.getRegisteredBuilders()
-        LogEntry entry = new LogEntry()
+        LogEntry entry = new LogEntry('vasilica petrica')
         LogCrawler crawler
 
         expect:
-        1 == registeredBuilders.size() // todo Serge: there are 2 builders registered with script, fix it
+        1 == registeredBuilders.size()
 
         and: 'verify that registered dummy consumer is built and consumed'
         null != (crawler = crawlerBuilder.build())

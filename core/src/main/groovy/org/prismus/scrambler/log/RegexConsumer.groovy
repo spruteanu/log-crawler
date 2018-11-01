@@ -103,7 +103,7 @@ class RegexConsumer implements LogConsumer {
 
     @Override
     void consume(LogEntry entry) {
-        final Map<String, ?> map
+        Map<String, ?> map
         if (group) {
             final value = entry.get(group)
             if (!value) {
